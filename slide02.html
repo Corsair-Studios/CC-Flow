@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2: Visual Reference Creation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Courier Prime', monospace;
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background grid */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: -2;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scan 3s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        
+        .slide-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 40px 120px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 50px;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+        }
+        
+        .slide-header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #00ccff, #ff0080, #00ff41);
+            z-index: -1;
+            border-radius: inherit;
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .phase-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0;
+            color: #00ff41;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 30px #00ff41;
+            letter-spacing: 4px;
+        }
+        
+        .phase-subtitle {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            margin: 15px 0 0 0;
+            color: #00ccff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .main-section {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff41;
+            padding: 30px;
+            position: relative;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 65, 0.2),
+                inset 0 0 15px rgba(0, 255, 65, 0.05);
+        }
+        
+        .main-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #00ff41, #00ccff);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .main-section h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            margin: 0 0 25px 0;
+            color: #00ccff;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: 1px;
+        }
+        
+        .section-icon {
+            font-size: 2rem;
+            color: #ff0080;
+            text-shadow: 0 0 10px #ff0080;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ccff;
+            padding: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
+        }
+        
+        .feature-card:hover {
+            border-color: #ff0080;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h4 {
+            font-family: 'Orbitron', monospace;
+            color: #00ff41;
+            font-size: 1.2rem;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            font-size: 1rem;
+            line-height: 1.6;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-list li:hover {
+            background: rgba(0, 255, 65, 0.05);
+            padding-left: 10px;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .bullet {
+            color: #ff0080;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+            text-shadow: 0 0 5px #ff0080;
+        }
+        
+        .highlight {
+            background: rgba(0, 255, 65, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .tool-highlight {
+            background: rgba(0, 204, 255, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #00ccff;
+            color: #00ccff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .limitation-highlight {
+            background: rgba(255, 0, 128, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #ff0080;
+            color: #ff0080;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .workflow-section {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ff0080;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .workflow-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff0080, #00ccff, #00ff41, #ff0080);
+            animation: workflowGlow 2s linear infinite;
+        }
+        
+        @keyframes workflowGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .workflow-title {
+            font-family: 'Orbitron', monospace;
+            color: #ff0080;
+            font-size: 1.4rem;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #00ff41;
+            border-radius: 50%;
+            line-height: 36px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: #00ff41;
+            margin-bottom: 10px;
+            background: rgba(0, 255, 65, 0.1);
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .step-text {
+            font-size: 0.9rem;
+            color: #00ccff;
+        }
+        
+        .arrow {
+            color: #ff0080;
+            font-size: 2rem;
+            align-self: center;
+        }
+        
+        /* Glitch effect for emphasis */
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch:hover::before,
+        .glitch:hover::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+        }
+        
+        .glitch:hover::before {
+            animation: glitch-1 0.5s infinite;
+            color: #ff0080;
+            z-index: -1;
+        }
+        
+        .glitch:hover::after {
+            animation: glitch-2 0.5s infinite;
+            color: #00ccff;
+            z-index: -2;
+        }
+        
+        @keyframes glitch-1 {
+            0%, 14%, 15%, 49%, 50%, 99%, 100% { transform: translate(0); }
+            15%, 49% { transform: translate(-2px, -1px); }
+        }
+        
+        @keyframes glitch-2 {
+            0%, 20%, 21%, 62%, 63%, 99%, 100% { transform: translate(0); }
+            21%, 62% { transform: translate(2px, 1px); }
+        }
+        
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-steps {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+            
+            .phase-title {
+                font-size: 2.5rem;
+            }
+            
+            .slide-container {
+                padding: 20px 20px 120px 20px;
+            }
+        }
+        
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+    
+    <div class="slide-container">
+        <div class="slide-header">
+            <h1 class="phase-title glitch" data-text="PHASE 2">PHASE 2</h1>
+            <p class="phase-subtitle">Visual Reference Creation</p>
+        </div>
+        
+        <div class="content-area">
+            <div class="main-section">
+                <h3><span class="section-icon">🎨</span>Mock-up Generation Workflow</h3>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>AI Image Generation</h4>
+                        <ul class="feature-list">
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Use <span class="tool-highlight">Gemini</span> and <span class="tool-highlight">Nano Banana</span> for concept images</span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Create visuals showing desired <span class="highlight">gameplay</span> and <span class="highlight">aesthetic</span></span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Generate multiple angles and scenarios</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4>Style Targeting</h4>
+                        <ul class="feature-list">
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Focus on <span class="limitation-highlight">basic poly structures</span></span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span><span class="limitation-highlight">Roblox-style</span> aesthetic for Three.js limitations</span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Emphasize <span class="highlight">gameplay clarity</span> over visual complexity</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4>Organization System</h4>
+                        <ul class="feature-list">
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Store examples in dedicated <span class="highlight">screenshots folder</span></span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Categorize by <span class="highlight">UI</span>, <span class="highlight">gameplay</span>, <span class="highlight">environment</span></span>
+                            </li>
+                            <li>
+                                <span class="bullet">></span>
+                                <span>Name files descriptively for AI reference</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-section">
+                <h3 class="workflow-title"><span class="section-icon">⚡</span>Reference Pipeline</h3>
+                <div class="workflow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Generate concept images with AI tools</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Curate best examples for style guide</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Organize into examples folder</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">Ready for Claude Code integration</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-container">
+        <a href="#" class="nav-btn" onclick="prevSlide()">← Back</a>
+        <a href="#" class="nav-btn" onclick="nextSlide()">Next →</a>
+    </div>
+    
+    <script>
+        function prevSlide() {
+            // This would navigate to slide 1 in a real implementation
+            alert('Navigate to Slide 1');
+        }
+        
+        function nextSlide() {
+            // This would navigate to slide 3 in a real implementation
+            alert('Navigate to Slide 3');
+        }
+    </script>
+</body>
+</html>

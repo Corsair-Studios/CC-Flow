@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 5: Deployment Considerations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Courier Prime', monospace;
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background grid */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: -2;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scan 3s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        
+        .slide-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 40px 120px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 50px;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+        }
+        
+        .slide-header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #00ccff, #ff0080, #00ff41);
+            z-index: -1;
+            border-radius: inherit;
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .phase-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0;
+            color: #00ff41;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 30px #00ff41;
+            letter-spacing: 4px;
+        }
+        
+        .phase-subtitle {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            margin: 15px 0 0 0;
+            color: #00ccff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .decision-point {
+            background: rgba(255, 0, 128, 0.15);
+            border: 3px solid #ff0080;
+            padding: 30px;
+            position: relative;
+            text-align: center;
+        }
+        
+        .decision-point::before {
+            content: '🚨';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a0a0a;
+            padding: 0 20px;
+            font-size: 2.5rem;
+        }
+        
+        .decision-point h3 {
+            font-family: 'Orbitron', monospace;
+            color: #ff0080;
+            font-size: 2rem;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #ff0080;
+        }
+        
+        .decision-point p {
+            font-size: 1.2rem;
+            color: #00ccff;
+            margin: 0;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+        
+        .deployment-paths {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .path-card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            padding: 30px;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .path-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #00ff41, #00ccff);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .path-card.multiplayer {
+            border-color: #ff0080;
+        }
+        
+        .path-card.multiplayer::before {
+            background: linear-gradient(180deg, #ff0080, #00ccff);
+        }
+        
+        .path-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.3);
+        }
+        
+        .path-card.multiplayer:hover {
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3);
+        }
+        
+        .path-card h4 {
+            font-family: 'Orbitron', monospace;
+            color: #00ff41;
+            font-size: 1.5rem;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .path-card.multiplayer h4 {
+            color: #ff0080;
+        }
+        
+        .path-icon {
+            font-size: 2rem;
+        }
+        
+        .path-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .path-list li {
+            padding: 12px 0;
+            font-size: 1rem;
+            line-height: 1.6;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .path-card.multiplayer .path-list li {
+            border-bottom-color: rgba(255, 0, 128, 0.2);
+        }
+        
+        .path-list li:hover {
+            background: rgba(0, 255, 65, 0.05);
+            padding-left: 10px;
+        }
+        
+        .path-card.multiplayer .path-list li:hover {
+            background: rgba(255, 0, 128, 0.05);
+        }
+        
+        .path-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .bullet {
+            color: #ff0080;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+            text-shadow: 0 0 5px #ff0080;
+        }
+        
+        .success-factors {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff41;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .analysis-section {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ccff;
+            padding: 30px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .analysis-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #00ccff, #00ff41, #ff0080, #00ccff);
+            animation: analysisGlow 3s linear infinite;
+        }
+        
+        @keyframes analysisGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .analysis-section h3 {
+            font-family: 'Orbitron', monospace;
+            color: #00ccff;
+            font-size: 1.8rem;
+            margin: 0 0 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .analysis-card {
+            background: rgba(0, 204, 255, 0.1);
+            border: 1px solid #00ccff;
+            padding: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .analysis-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 204, 255, 0.15), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .analysis-card:hover::before {
+            left: 100%;
+        }
+        
+        .analysis-card:hover {
+            border-color: #ff0080;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .analysis-card h4 {
+            font-family: 'Orbitron', monospace;
+            color: #00ccff;
+            font-size: 1.2rem;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .analysis-icon {
+            font-size: 1.4rem;
+            color: #ff0080;
+        }
+        
+        .analysis-card p {
+            color: #00ff41;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .success-factors::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #00ff41, #00ccff, #ff0080, #00ff41);
+            animation: successGlow 3s linear infinite;
+        }
+        
+        @keyframes successGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .success-factors h3 {
+            font-family: 'Orbitron', monospace;
+            color: #00ff41;
+            font-size: 1.8rem;
+            margin: 0 0 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .success-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .success-card {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .success-card:hover {
+            border-color: #00ccff;
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.2);
+        }
+        
+        .success-card h4 {
+            font-family: 'Orbitron', monospace;
+            color: #00ccff;
+            font-size: 1.1rem;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .success-card p {
+            color: #00ff41;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .highlight {
+            background: rgba(0, 255, 65, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .tech-highlight {
+            background: rgba(0, 204, 255, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #00ccff;
+            color: #00ccff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .warning-highlight {
+            background: rgba(255, 0, 128, 0.2);
+            padding: 3px 8px;
+            border: 1px solid #ff0080;
+            color: #ff0080;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        .completion-banner {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            margin-top: 20px;
+        }
+        
+        .completion-banner::before {
+            content: '🎮';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a0a0a;
+            padding: 0 20px;
+            font-size: 2.5rem;
+        }
+        
+        .completion-banner h3 {
+            font-family: 'Orbitron', monospace;
+            color: #00ff41;
+            font-size: 1.8rem;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .completion-banner p {
+            font-size: 1.1rem;
+            color: #00ccff;
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        /* Glitch effect for emphasis */
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch:hover::before,
+        .glitch:hover::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+        }
+        
+        .glitch:hover::before {
+            animation: glitch-1 0.5s infinite;
+            color: #ff0080;
+            z-index: -1;
+        }
+        
+        .glitch:hover::after {
+            animation: glitch-2 0.5s infinite;
+            color: #00ccff;
+            z-index: -2;
+        }
+        
+        @keyframes glitch-1 {
+            0%, 14%, 15%, 49%, 50%, 99%, 100% { transform: translate(0); }
+            15%, 49% { transform: translate(-2px, -1px); }
+        }
+        
+        @keyframes glitch-2 {
+            0%, 20%, 21%, 62%, 63%, 99%, 100% { transform: translate(0); }
+            21%, 62% { transform: translate(2px, 1px); }
+        }
+        
+        @media (max-width: 768px) {
+            .deployment-paths {
+                grid-template-columns: 1fr;
+            }
+            
+            .success-grid, .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .phase-title {
+                font-size: 2.5rem;
+            }
+            
+            .slide-container {
+                padding: 20px 20px 120px 20px;
+            }
+        }
+        
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+    
+    <div class="slide-container">
+        <div class="slide-header">
+            <h1 class="phase-title glitch" data-text="PHASE 5">PHASE 5</h1>
+            <p class="phase-subtitle">Deployment Considerations</p>
+        </div>
+        
+        <div class="content-area">
+            <div class="decision-point">
+                <h3>Critical Architecture Decision</h3>
+                <p>You <span class="warning-highlight">must decide multiplayer vs single-player upfront</span>. Converting single-player to multiplayer later causes major headaches due to client-based architecture conflicts.</p>
+            </div>
+            
+            <div class="deployment-paths">
+                <div class="path-card">
+                    <h4><span class="path-icon">🎯</span>Single Player Path</h4>
+                    <ul class="path-list">
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Run locally for testing and development</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Use <span class="highlight">bots</span> instead of real players when possible</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Simpler deployment and <span class="highlight">faster prototyping</span></span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Client-side logic and state management</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>No network complexity or latency issues</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="path-card multiplayer">
+                    <h4><span class="path-icon">🌐</span>Multiplayer Path</h4>
+                    <ul class="path-list">
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Integrate <span class="tech-highlight">Git</span>, <span class="tech-highlight">Vercel</span>, and <span class="tech-highlight">Redis</span> from day one</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Build everything <span class="warning-highlight">server-based</span> from the start</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>Single player still works (just one player on server)</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span>More complex but enables true multiplayer features</span>
+                        </li>
+                        <li>
+                            <span class="bullet">></span>
+                            <span><span class="warning-highlight">Retrofitting is painful</span> but possible - much harder than starting fresh</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="analysis-section">
+                <h3><span class="section-icon">🔬</span>Post-Development Analysis</h3>
+                
+                <div class="analysis-grid">
+                    <div class="analysis-card">
+                        <h4><span class="analysis-icon">⚡</span>Headless Simulation</h4>
+                        <p>After finishing single player experience, set up a <span class="highlight">headless version</span> of the program to simulate <span class="highlight">hundreds of games in seconds</span></p>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h4><span class="analysis-icon">🤖</span>AI Analysis</h4>
+                        <p>Use AI to analyze simulation results and provide <span class="highlight">gameplay suggestions</span> based on actual performance data</p>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h4><span class="analysis-icon">📊</span>Rapid Iteration</h4>
+                        <p>This approach allows for <span class="highlight">data-driven design decisions</span> and rapid balancing without manual testing</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="success-factors">
+                <h3><span class="section-icon">🏆</span>Critical Success Factors</h3>
+                
+                <div class="success-grid">
+                    <div class="success-card">
+                        <h4>Incremental Layers</h4>
+                        <p>Layer features incrementally - achieve <span class="highlight">100% completion</span> before moving to the next feature</p>
+                    </div>
+                    
+                    <div class="success-card">
+                        <h4>Code Protection</h4>
+                        <p>Use code auditor agent to <span class="highlight">protect completed code</span> from modification during new development</p>
+                    </div>
+                    
+                    <div class="success-card">
+                        <h4>User Perspective</h4>
+                        <p>User perspective is crucial - don't focus solely on <span class="highlight">technical implementation</span></p>
+                    </div>
+                    
+                    <div class="success-card">
+                        <h4>Visual Validation</h4>
+                        <p>Visual validation is key - <span class="highlight">let AI see</span> what players will see through screenshots</p>
+                    </div>
+                    
+                    <div class="success-card">
+                        <h4>Architecture Planning</h4>
+                        <p>Multiplayer architecture <span class="warning-highlight">should be planned</span> from the start - retrofitting is a major pain</p>
+                    </div>
+                    
+                    <div class="success-card">
+                        <h4>MCP Integration</h4>
+                        <p>MCPs like <span class="highlight">Playwright</span> can be added anytime, but earlier integration provides more benefit</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="completion-banner">
+                <h3>Rapid Prototype Complete!</h3>
+                <p>You now have a systematic approach to building game prototypes with Claude Code, MCPs, and visual AI feedback. <span class="highlight">Start simple</span>, <span class="highlight">layer incrementally</span>, and let the agents handle the complexity while you focus on the creative vision.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-container">
+        <a href="#" class="nav-btn" onclick="prevSlide()">← Back</a>
+    </div>
+    
+    <script>
+        function prevSlide() {
+            // This would navigate to slide 4 in a real implementation
+            alert('Navigate to Slide 4');
+        }
+    </script>
+</body>
+</html>
